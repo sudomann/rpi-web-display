@@ -1,2 +1,7 @@
-# rpi-web-display
-Basic class assignment to show live sensor output in webpage
+   
+## Notes
+
+```
+pip install -r requirements.txt
+python application.py
+```

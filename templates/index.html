@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://code.jquery.com/jquery-3.4.0.min.js"
+    integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js.map"></script>
+  <!--.map import above might be unnecessary-->
+  <script src="static/js/application.js"></script>
+
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <h1 class="display-4">Asynchronous Client-Flask-RPI Communication</h1>
+      <p class="lead">Ranges fetched by my Flask server from the sensor appear and transimitting to a client.</p>
+    </div>
+  </div>
+  <div class="card text-center" id="content">
+    <div class="card-body">
+      <h5 class="card-title">Live Range:</h5>
+      <p class="card-text">Card will be asynchronously updated below with live polling data from the sensor</p>
+      <div id="log"></div>
+    </div> <!-- /#log -->
+    <div class="card-footer text-muted">
+      Authors: Willy Njundong, Joshua Pratchios
+    </div>
+  </div>
+
+</body>
+
+</html>
