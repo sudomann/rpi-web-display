@@ -1,10 +1,17 @@
+import time
+import board
+import busio
+import adafruit_vl53l0x
 # Start with a basic flask app webpage.
 from flask_socketio import SocketIO, emit
 from flask import Flask, render_template, url_for, copy_current_request_context
-from random import random
-from time import sleep
 from threading import Thread, Event
 
+# Initialize I2C bus and sensor.
+i2c = busio.I2C(board.SCL, board.SDA)
+vl53 = adafruit_vl53l0x.VL53L0X(i2c)
+
+# Basic Flask config
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 app.config['DEBUG'] = True
@@ -12,31 +19,31 @@ app.config['DEBUG'] = True
 # turn the flask app into a socketio app
 socketio = SocketIO(app)
 
-# random number Generator Thread
+# sensor range data fetching Thread
 thread = Thread()
 thread_stop_event = Event()
 
 
 class SensorRangeThread(Thread):
     def __init__(self):
-        self.delay = 1
+        self.delay = 1.0
         super(SensorRangeThread, self).__init__()
 
-    def randomNumberGenerator(self):
+    def get_sensor_reading(self):
         """
-        Generate a random number every 1 second and emit to a socketio instance (broadcast)
+        Fetch sensor reading every 1 second and emit to a socketio instance (broadcast)
         Ideally to be run in a separate thread?
         """
-        # infinite loop of magical random numbers
-        print("Making random numbers")
+        # infinite loop of sensor readings
+        print("Fetching sensor readings")
         while not thread_stop_event.isSet():
-            number = round(random()*10, 3)
+            number = vl53.range
             print(number)
             socketio.emit('newnumber', {'number': number}, namespace='/test')
-            sleep(self.delay)
+            time.sleep(self.delay)
 
     def run(self):
-        self.randomNumberGenerator()
+        self.get_sensor_reading()
 
 
 @app.route('/')
@@ -51,7 +58,7 @@ def test_connect():
     global thread
     print('Client connected')
 
-    # Start the random number generator thread only if the thread has not been started before.
+    # Start the sensor reading thread only if the thread has not been started before.
     if not thread.isAlive():
         print("Starting Thread")
         thread = SensorRangeThread()
