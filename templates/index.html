@@ -7,28 +7,130 @@
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js.map"></script>
   <!--.map import above might be unnecessary-->
-  <script src="static/js/application.js"></script>
-
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+  <script>
+    numbers_received = [];  // global
+    window.onload = function () {
+      $(document).ready(function () {
+        //connect to the socket server.
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+
+        //receive details from server
+        socket.on('newnumber', function (msg) {
+          console.log("Received number" + msg.number);
+          //maintain a list of seven numbers
+          if (numbers_received.length >= 7) {
+            numbers_received.shift()
+          }
+          numbers_received.push(msg.number);
+          numbers_string = '';
+          for (var i = 0; i < numbers_received.length; i++) {
+            numbers_string = numbers_string + '<p class="card-text">' + numbers_received[i].toString() + ' mm' + '</p>';
+          }
+          $('#log').html(numbers_string);
+        });
+
+      });
+
+      var dps = []; // dataPoints
+      var chart = new CanvasJS.Chart("chartContainer", {
+        zoomEnabled: true,
+        animationEnabled: true,
+        title: {
+          text: "Live Range"
+        },
+        axisX: {
+          suffix: " s",
+          crosshair: {
+            enabled: true,
+            snapToDataPoint: true
+          }
+        },
+        axisY: {
+          title: "Depth (in millimeters)",
+          suffix: " mm",
+          reversed: false,
+          logarithmic: false,
+          titleFontColor: "#6D78AD",
+          lineColor: "#6D78AD",
+          gridThickness: 0,
+          lineThickness: 1,
+          includeZero: false,
+          crosshair: {
+            enabled: true,
+            snapToDataPoint: true,
+          }
+        },
+        data: [{
+          type: "area",
+          dataPoints: dps
+        }]
+      });
+
+      var xVal = 0;
+      var yVal = 0;
+      var updateInterval = 1000;
+      var dataLength = 20; // number of dataPoints visible at any point
+
+      var updateChart = function (count) {
+
+        count = count || 1;
+
+        for (var j = 0; j < count; j++) {
+          yVal = numbers_received[numbers_received.length - 1];
+          dps.push({
+            x: xVal,
+            y: yVal
+          });
+          xVal++;
+        }
+
+        if (dps.length > dataLength) {
+          dps.shift();
+        }
+
+        chart.render();
+      };
+
+      updateChart(dataLength);
+      setInterval(function () { updateChart() }, updateInterval);
+
+    }
+  </script>
 </head>
 
 <body>
-  <div class="jumbotron jumbotron-fluid">
-    <div class="container">
-      <h1 class="display-4">Asynchronous Client-Flask-RPI Communication</h1>
-      <p class="lead">Ranges fetched by my Flask server from the sensor appear and transimitting to a client.</p>
+  <div class="vw-100 vh-100">
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container container-fluid">
+        <h1 class="display-4">Asynchronous Client-Flask-RPI Communication</h1>
+        <p class="lead">Ranges fetched by a Flask server from the sensor appear and are transimitted to a client.</p>
+        <div class="d-flex bd-highlight mb-3">
+          <div class="mr-autobd-highlight">
+            <div class="card text-center" id="content">
+              <div class="card-body">
+                <!-- <h5 class="card-title">Live Range:</h5> -->
+                <p class="card-text">Graph will be asynchronously updated with live polling data from the sensor
+                </p>
+                <div id="log"></div>
+              </div> <!-- /#log -->
+            </div>
+          </div>
+          <div class="container">
+            <div id="chartContainer" style="height: 370px; position: auto"></div>
+            <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="card text-center" id="content">
-    <div class="card-body">
-      <h5 class="card-title">Live Range:</h5>
-      <p class="card-text">Card will be asynchronously updated below with live polling data from the sensor</p>
-      <div id="log"></div>
-    </div> <!-- /#log -->
+
     <div class="card-footer text-muted">
       Authors: Willy Njundong, Joshua Pratchios
     </div>
   </div>
+
+
 
 </body>
 
