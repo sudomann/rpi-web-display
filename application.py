@@ -30,7 +30,7 @@ class SensorRangeThread(Thread):
         # infinite loop of magical random numbers
         print("Making random numbers")
         while not thread_stop_event.isSet():
-            number = round(random()*10, 3)
+            number = round(random()*9000, 1)
             print(number)
             socketio.emit('newnumber', {'number': number}, namespace='/test')
             sleep(self.delay)
@@ -64,4 +64,5 @@ def test_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+    #socketio.run(app)
+    socketio.run(app, host="0.0.0.0", port="5000")
